@@ -1,0 +1,39 @@
+---
+- name: Install mariadb
+  hosts: localhost
+  remote_user: ec2-user
+  become: true
+
+  tasks:
+    - name: install mariadb
+      yum:
+        name: mariadb-server
+        state: present
+
+    - name: Start and Enable Mariadb
+      systemd:
+        name: mariadb
+        state: started
+        enabled: true
+
+    - name: install MySQL client library to allow use of mysql_user
+      yum:
+        name: python2-PyMySQL
+        state: present
+
+    - name: Create a new database with name 'bobdata'
+      mysql_db:
+        name: bobdata
+        state: present
+
+    - name: create user  
+      mysql_user:
+        name: Bob
+        password: pa55word
+        priv: '*.*:ALL'
+        state: present
+
+    - name: shell to create table and import data
+      ansible.builtin.shell:
+        cmd: mysql -u root bobdata < quotes.sql
+        
