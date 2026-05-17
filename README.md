@@ -156,7 +156,7 @@ terraform destroy -auto-approve
 
 ```bash
 # Clone the repository
-git clone https://github.com/Seyifunmi0604/mariadb-ansible-setup.git
+git clone https://github.com/seyifalode-cmd/mariadb-ansible-setup.git
 cd mariadb-ansible-setup
 
 # Initialize Terraform
