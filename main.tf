@@ -48,7 +48,7 @@ resource "aws_instance" "example" {
       "sleep 60s",
       "sudo amazon-linux-extras install epel -y",
       "sudo yum-config-manager --enable epel",
-      "ansible-playbook install_mariadb.yaml"
+      "MARIADB_USER_PASSWORD='${var.db_password}' ansible-playbook install_mariadb.yaml"
     ]
  }
 

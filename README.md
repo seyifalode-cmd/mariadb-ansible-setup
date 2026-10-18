@@ -1,4 +1,6 @@
-# **MariaDB Ansible Setup**
+# MariaDB Ansible Setup
+
+Oluwaseyi Michael Falode | Cloud & DevOps Engineering | Toronto, ON
 
 Self-contained Terraform and Ansible project that provisions an AWS EC2 instance, installs Ansible, and runs a playbook to deploy a fully configured MariaDB database — including database creation, user provisioning, and seed data import — all in a single `terraform apply`.
 
@@ -65,7 +67,7 @@ Local Machine
 |    - systemd: mariadb (started + enabled)    |
 |    - yum: python2-PyMySQL                    |
 |    - mysql_db: bobdata                       |
-|    - mysql_user: Bob / pa55word              |
+|    - mysql_user: Bob (password from env var)  |
 |    - shell: mysql -u root bobdata < quotes.sql
 +----------------------------------------------+
      |
@@ -119,6 +121,7 @@ terraform init
 terraform plan
 
 # 3. Apply — this provisions EC2, installs Ansible, and runs the full playbook
+export TF_VAR_db_password='<strong-password>'   # DB user password, kept out of the repo
 terraform apply \
   -var="ssh_key_private=~/.ssh/id_ed25519" \
   -var="ssh_key_public=~/.ssh/id_ed25519.pub" \
@@ -136,9 +139,9 @@ terraform output Ansible-Install_dbserver-PublicIP
 ssh -i ~/.ssh/id_ed25519 ec2-user@<public-ip>
 
 # On the remote server:
-mysql -u Bob -ppa55word bobdata -e "SHOW TABLES;"
-mysql -u Bob -ppa55word bobdata -e "SELECT COUNT(*) FROM SteveJobsQuotes;"
-mysql -u Bob -ppa55word bobdata -e "SELECT * FROM SteveJobsQuotes LIMIT 3;"
+mysql -u Bob -p bobdata -e "SHOW TABLES;"
+mysql -u Bob -p bobdata -e "SELECT COUNT(*) FROM SteveJobsQuotes;"
+mysql -u Bob -p bobdata -e "SELECT * FROM SteveJobsQuotes LIMIT 3;"
 
 # 6. Tear down
 terraform destroy -auto-approve
@@ -163,14 +166,15 @@ cd mariadb-ansible-setup
 terraform init
 
 # Apply — replace key paths if yours differ from the defaults
+export TF_VAR_db_password='<strong-password>'   # DB user password, kept out of the repo
 terraform apply \
   -var="ssh_key_private=${HOME}/.ssh/id_ed25519" \
   -var="ssh_key_public=${HOME}/.ssh/id_ed25519.pub" \
   -auto-approve
 
 # Validate
-ssh -i ~/.ssh/id_ed25519 ec2-user@$(terraform output -raw Ansible-Install_dbserver-PublicIP) \
-  "mysql -u Bob -ppa55word bobdata -e 'SELECT COUNT(*) FROM SteveJobsQuotes;'"
+ssh -t -i ~/.ssh/id_ed25519 ec2-user@$(terraform output -raw Ansible-Install_dbserver-PublicIP) \
+  "mysql -u Bob -p bobdata -e 'SELECT COUNT(*) FROM SteveJobsQuotes;'"
 
 # Clean up
 terraform destroy -auto-approve

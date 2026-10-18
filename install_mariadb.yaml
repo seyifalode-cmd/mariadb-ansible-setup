@@ -4,7 +4,17 @@
   remote_user: ec2-user
   become: true
 
+  vars:
+    # Supply the password at run time, never in the repo:
+    #   export MARIADB_USER_PASSWORD='...'   (or use ansible-vault)
+    mariadb_user_password: "{{ lookup('env', 'MARIADB_USER_PASSWORD') }}"
+
   tasks:
+    - name: Fail early if no database password was supplied
+      ansible.builtin.assert:
+        that: mariadb_user_password | length > 0
+        fail_msg: "Set MARIADB_USER_PASSWORD before running this playbook."
+
     - name: install mariadb
       yum:
         name: mariadb-server
@@ -29,8 +39,8 @@
     - name: create user  
       mysql_user:
         name: Bob
-        password: pa55word
-        priv: '*.*:ALL'
+        password: "{{ mariadb_user_password }}"
+        priv: 'bobdata.*:ALL'   # least privilege: only the app database
         state: present
 
     - name: shell to create table and import data

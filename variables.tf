@@ -68,3 +68,9 @@ variable "ssh_key_public" {
   default = "~/.ssh/id_ed25519.pub"
 }
 
+
+variable "db_password" {
+  description = "Password for the MariaDB application user. Supply it with: export TF_VAR_db_password='...'"
+  type        = string
+  sensitive   = true
+}
